@@ -18,31 +18,31 @@ self.addEventListener("install", (event) => {
         "/src/App.css",
         "/node_modules/.vite/deps/chunk-REFQX4J5.js?v=30782c49", // Add this file
         "/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=30782c49", // Add this file
+        "/node_modules/.vite/deps/react-dom_client.js?v=30782c49", // Add this file
+        "/node_modules/.vite/deps/react.js?v=30782c49", // Add this file
+        "/src/main.jsx?t=1719895760823", // Add this file
+        "/src/swDev.js?t=1719895760823", // Add this file
         "/src/assets/react.svg?import",
+        "/src/users.jsx",
       ]);
     })
   );
 });
 
 self.addEventListener("fetch", (event) => {
-  if (event.request.url.includes("/sockjs-node")) {
-    // Ignore WebSocket requests
-    return;
+  console.log("Service Worker: Fetching", event.request.url);
+  if (!navigator.onLine) {
+    console.log("Service Worker: Offline, serving cached content");
+    event.respondWith(
+      caches.match(event.request).then((cachedResponse) => {
+        if (cachedResponse) {
+          console.log("Service Worker: Found in cache", event.request.url);
+          console.log("Service Worker: Found in cache", event.request);
+          return cachedResponse; // Serve from cache if available
+        }
+        console.log("Service Worker: Not found in cache", event.request.url);
+        console.log("Service Worker: Not found in cache", event.request);
+      })
+    );
   }
-
-  event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      return (
-        cachedResponse ||
-        fetch(event.request)
-          .then((networkResponse) => {
-            return networkResponse;
-          })
-          .catch(() => {
-            // Fallback response if fetch fails (network is offline)
-            return new Response("Offline content is not available.");
-          })
-      );
-    })
-  );
 });
